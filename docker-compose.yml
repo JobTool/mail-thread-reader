@@ -1,0 +1,7 @@
+version: "3"
+services:
+  development:
+    build: .
+    working_dir: /go/src/github.com/JobTool/mail-thread-reader
+    volumes:
+      - .:/go/src/github.com/JobTool/mail-thread-reader
