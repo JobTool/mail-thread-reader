@@ -4,10 +4,22 @@ import (
   "time"
 )
 
+const (
+  HtmlType = "text/html"
+  TextType = "text/plain"
+  MultipartType = "multipart/alternative"
+  PdfType = "application/pdf"
+)
+
+type MailBody struct {
+  Type string
+  Content string
+}
+
 type Mail struct {
   From string
   To string
-  Body []string
+  Body []MailBody
   Subject string
   Date time.Time
 }
