@@ -51,10 +51,14 @@ func FetchMailsFrom(oauthClient *http.Client, query string) []Mail {
       }
 
       payload := messageBody.Payload
-      if (strings.Contains(payload.MimeType, "multipart")) {
+      mimeType := payload.MimeType
+      if (strings.Contains(mimeType, "multipart")) {
         mail.Body = parseMultPartBody(payload.Parts)
       } else {
-        mail.Body = append(mail.Body, payload.Body.Data)
+        mail.Body = append(mail.Body, MailBody {
+          mimeType,
+          payload.Body.Data,
+        })
       }
       mail.SetDate(messageBody.InternalDate)
       mails = append(mails, mail)
@@ -69,14 +73,27 @@ func FetchMailsFrom(oauthClient *http.Client, query string) []Mail {
   return mails
 }
 
-func parseMultPartBody(parts []*gmail.MessagePart) []string {
-  var body []string
+func parseMultPartBody(parts []*gmail.MessagePart) []MailBody {
+  var body []MailBody
   for _, message := range parts {
-    decoded, _ := base64.URLEncoding.DecodeString(message.Body.Data)
-    body = append(body, string(decoded))
+    mimeType := message.MimeType
+    bodyData := message.Body.Data
+
+    // TODO: Add support to different types of body data
+    if (mimeType == HtmlType || mimeType == TextType) {
+      body = append(body, MailBody {
+        Type: mimeType,
+        Content: parseStringBody(bodyData),
+      })
+    }
   }
 
   return body
+}
+
+func parseStringBody(bodyData string) string {
+  decodedContent, _ := base64.URLEncoding.DecodeString(bodyData)
+  return string(decodedContent)
 }
 
 
